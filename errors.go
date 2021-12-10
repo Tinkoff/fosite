@@ -23,6 +23,7 @@ package fosite
 
 import (
 	"encoding/json"
+	stderr "errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -32,8 +33,6 @@ import (
 
 	"github.com/ory/fosite/i18n"
 	"github.com/ory/x/errorsx"
-
-	stderr "errors"
 
 	"github.com/pkg/errors"
 )
@@ -362,7 +361,19 @@ func (e *RFC6749Error) Status() string {
 }
 
 func (e RFC6749Error) Error() string {
-	return e.ErrorField
+	msg := e.ErrorField
+	if e.DebugField != "" {
+		msg = msg + " debug: " + e.DebugField
+	}
+	if e.HintField != "" {
+		msg = msg + " hint: " + e.HintField
+	}
+
+	if e.cause != nil {
+		msg = msg + " cause: " + e.cause.Error()
+	}
+
+	return msg
 }
 
 func (e *RFC6749Error) RequestID() string {
